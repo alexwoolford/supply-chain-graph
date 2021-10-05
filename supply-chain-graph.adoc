@@ -1,0 +1,45 @@
+= Supply Chain with Graph Analysis
+
+    CREATE CONSTRAINT bom_idx IF NOT EXISTS
+    ON (b:BOM)
+    ASSERT b.bom IS UNIQUE
+
+    CREATE CONSTRAINT item_idx IF NOT EXISTS
+    ON (i:Item)
+    ASSERT i.item IS UNIQUE
+
+    CREATE CONSTRAINT full_address_idx IF NOT EXISTS
+    ON (a:FullAddress)
+    ASSERT a.full_address IS UNIQUE
+
+    CREATE FULLTEXT INDEX addres_idx IF NOT EXISTS FOR (n:FullAddress) ON EACH [n.full_address]
+
+== Todo
+
+. add centrality measure for items
+. scrub out missing data and use label propagation to fill in gaps
+. if no alternatives are available, then it's worth understanding where the component is built
+
+risk: single-source (other mfgs can make, single site)
+
+IC/subtrate comes before wafer fab; PCB's before board is assembled - tend to be somewhat centralized.
+
+TSMC: WTF!!! Fab. Xilinx has no factories, i.e. they're "fabless".
+
+TSMC building newn fab in TAIWAN! $20B 3 um
+
+UMC == second biggest fab, also Taiwanese.
+
+IC/PCB info is often unknown - possibly helpful "relationship database"
+
+risks identified in 10k's - hence possible to identify risk.
+
+huge SQL database, constantly changing
+
+alerting to customer
+
+label propagation
+
+Add full text indexes
+
+
