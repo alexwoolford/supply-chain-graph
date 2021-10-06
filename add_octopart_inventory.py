@@ -13,6 +13,11 @@ r = redis.Redis(host='deepthought.woolford.io', port=6379, db=0)
 
 
 def cache(function=None):
+    """
+    This function is a decorator to cache the results from the Octopart API in Redis.
+
+    This is to avoid burning through API credits by making duplicate calls during development.
+    """
     @wraps(function)
     def wrapper(*args, **kwargs):
         q = args[0]

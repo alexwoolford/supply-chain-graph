@@ -41,5 +41,3 @@ alerting to customer
 label propagation
 
 Add full text indexes
-
-
