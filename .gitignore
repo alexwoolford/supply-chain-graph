@@ -1,3 +1,4 @@
 .DS_Store
 venv/
 .idea/
+data/10k_risk_text/*.txt

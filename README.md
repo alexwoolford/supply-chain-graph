@@ -1,18 +1,29 @@
 # supply-chain-graph
 
-Load the ticker symbols associated with the publically traded manufacturers:
+Load the ticker symbols associated with the publicly traded manufacturers, and 10k urls (US-only):
 
-    CREATE CONSTRAINT ticker_idx IF NOT EXISTS ON (t:Ticker) ASSERT (t.manufacturer) IS NODE KEY
-    
+    CREATE CONSTRAINT IF NOT EXISTS ON (t:Ticker)
+    ASSERT (t.exchange, t.ticker) IS NODE KEY
+
     LOAD CSV WITH HEADERS FROM 'file:///manufacturer_ticker.csv' AS row
     WITH row
-    MERGE(ticker:Ticker {manufacturer: row.manufacturer, exchange: row.exchange, ticker: row.ticker})
+    MERGE(ticker:Ticker {exchange: row.exchange, ticker: row.ticker})
 
+    LOAD CSV WITH HEADERS FROM 'file:///manufacturer_ticker.csv' AS row
+    WITH row
     MATCH(i:Inventory)
-    WITH i
-    MATCH(t:Ticker {manufacturer: i.manufacturer})
-    MERGE(i)-[:HAS_TICKER]->(t)
+    WHERE i.manufacturer = row.manufacturer
+    WITH row, i
+    MATCH(t:Ticker)
+    WHERE t.ticker = row.ticker
+    AND t.exchange = row.exchange
+    MERGE(i)-[:MANUFACTURER_HAS_TICKER]->(t)
 
+    LOAD CSV WITH HEADERS FROM 'file:///10k_urls.csv' AS row
+    MATCH(t:Ticker)
+    WHERE t.ticker = row.ticker
+    AND t.exchange = row.exchange
+    SET t.url_10k = row.url_10k
 
 
 Search phrases:
