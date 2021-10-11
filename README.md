@@ -30,6 +30,8 @@ Search phrases:
 
     Items where address contains $address_substr
 
+    :params {address_substr: 'Israel'}
+
     MATCH(a:Address)-[r]-(i:Item)
     WHERE a.full_address contains $address_substr
     RETURN a, r, i
@@ -43,3 +45,7 @@ Search phrases:
 [//]: # (TODO: add 10k and news feed relationship narrative)
 [//]: # (TODO: find examples of automotive shortages)
 [//]: # (TODO: capture 10k reports for tickers and perform entity resolution)
+[//]: # (TODO: add requirements.txt)
+[//]: # (TODO: fix 10k risk parser for DIOD, HON, KEM, MMM, MXIM, NXPI, TXN)
+[//]: # (TODO: incorporate RSS newsfeed article evaluation)
+[//]: # (TODO: steps to recreate graph; spell out environment variable properties and script order)
