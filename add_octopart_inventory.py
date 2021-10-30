@@ -41,6 +41,7 @@ def get_part_inventory_from_octopart(q):
     transport = AIOHTTPTransport(url="https://octopart.com/api/v4/endpoint", headers={'token': os.getenv('OCTOPART_TOKEN')})
     client = Client(transport=transport, fetch_schema_from_transport=True)
 
+    # TODO: change GraphQL to separate search string into manufacturer/mpn fields instead of a single search string
     query = gql(
         """
         query ($q: String!) {
@@ -84,7 +85,9 @@ if __name__ == "__main__":
             parts.append({"manufacturer": manufacturer, "mpn": mpn})
 
     for part in parts:
-        octopart_inventory_parts = get_part_inventory_from_octopart(part.get("manufacturer") + " " + part.get("mpn"))
+        manufacturer = part.get('manufacturer')
+        mpn = part.get('mpn')
+        octopart_inventory_parts = get_part_inventory_from_octopart(manufacturer + " " + mpn)
         if octopart_inventory_parts:
             for octopart_inventory_part in octopart_inventory_parts:
 
