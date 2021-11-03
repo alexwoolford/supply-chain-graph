@@ -11,13 +11,13 @@ Load the ticker symbols associated with the publicly traded manufacturers, and 1
 
     LOAD CSV WITH HEADERS FROM 'file:///manufacturer_ticker.csv' AS row
     WITH row
-    MATCH(i:Inventory)
-    WHERE i.manufacturer = row.manufacturer
-    WITH row, i
+    MATCH(p:Part)
+    WHERE p.manufacturer = row.manufacturer
+    WITH row, p
     MATCH(t:Ticker)
     WHERE t.ticker = row.ticker
     AND t.exchange = row.exchange
-    MERGE(i)-[:MANUFACTURER_HAS_TICKER]->(t)
+    MERGE(p)-[:MANUFACTURER_HAS_TICKER]->(t)
 
     LOAD CSV WITH HEADERS FROM 'file:///10k_urls.csv' AS row
     MATCH(t:Ticker)
@@ -166,3 +166,4 @@ Search phrases:
 [//]: # (TODO: fix 10k risk parser for DIOD, HON, KEM, MMM, MXIM, NXPI, TXN)
 [//]: # (TODO: incorporate RSS newsfeed article evaluation)
 [//]: # (TODO: steps to recreate graph; spell out environment variable properties and script order)
+

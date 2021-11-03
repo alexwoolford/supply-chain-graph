@@ -13,9 +13,9 @@ driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
 index_statements = ["CREATE CONSTRAINT bom_idx IF NOT EXISTS ON (b:BOM) ASSERT (b.bom) IS NODE KEY",
                     "CREATE CONSTRAINT item_idx IF NOT EXISTS ON (i:Item) ASSERT (i.item) IS NODE KEY",
                     "CREATE CONSTRAINT address_idx IF NOT EXISTS ON (a:Address) ASSERT (a.full_address) IS NODE KEY",
-                    "CREATE CONSTRAINT part_idx IF NOT EXISTS ON (p:Part) ASSERT (p.manufacturer, p.mpn) IS NODE KEY",
+                    "CREATE CONSTRAINT part_idx IF NOT EXISTS ON (p:Part) ASSERT (p.manufacturer, p.mpn, p.source) IS NODE KEY",
                     "CREATE FULLTEXT INDEX address_fulltext_idx IF NOT EXISTS FOR (a:Address) ON EACH [a.full_address, a.country, a.state, a.city]",
-                    "CREATE FULLTEXT INDEX part_fulltext_idx IF NOT EXISTS FOR (p:Part) ON EACH [p.manufacturer, p.mpn]"]
+                    "CREATE FULLTEXT INDEX part_fulltext_idx IF NOT EXISTS FOR (p:Part) ON EACH [p.manufacturer, p.mpn, p.source]"]
 
 with driver.session(database="supplychain") as session:
     for index_statement in index_statements:
@@ -40,7 +40,7 @@ for index, row in mpn_analysis_df.iterrows():
                     bom=bom,
                     item=item)
 
-# load item/supplier nodes and relationships
+# load item/supplier nodes and relationships (Z2 data)
 for index, row in mpn_analysis_df.iterrows():
     item = str(row["Item Number"])
     manufacturer = str(row["Z Supplier"])
@@ -48,7 +48,23 @@ for index, row in mpn_analysis_df.iterrows():
     with driver.session(database="supplychain") as session:
         session.run("""
                     MERGE(item:Item {item: $item}) 
-                    MERGE(part:Part {manufacturer: $manufacturer, mpn: $mpn})
+                    MERGE(part:Part {manufacturer: $manufacturer, mpn: $mpn, source: 'Z2Data'})
+                    MERGE(item)-[:HAS_PART]->(part) 
+                    """,
+                    item=item,
+                    manufacturer=manufacturer,
+                    mpn=mpn)
+
+
+# load item/supplier nodes and relationships (original Medtronic data)
+for index, row in mpn_analysis_df.iterrows():
+    item = str(row["Item Number"])
+    manufacturer = str(row["Mfr. Name"])
+    mpn = str(row["Mfr. Part Number"])
+    with driver.session(database="supplychain") as session:
+        session.run("""
+                    MERGE(item:Item {item: $item}) 
+                    MERGE(part:Part {manufacturer: $manufacturer, mpn: $mpn, source: 'Medtronic'})
                     MERGE(item)-[:HAS_PART]->(part) 
                     """,
                     item=item,
@@ -73,6 +89,7 @@ for index, row in part_locations_df.iterrows():
                             SET address.country = $country 
                             SET address.state = $state 
                             SET address.city = $city 
+                            SET address.source = 'Z2Data'
                             MERGE(item)-[:HAS_ADDRESS]->(address) 
                             """,
                             item=item,
